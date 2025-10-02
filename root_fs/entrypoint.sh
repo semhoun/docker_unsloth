@@ -102,4 +102,4 @@ with open(config_file, 'w') as f:
 fi
 
 echo "Handing over control to supervisord..."
-exec /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf
+exec /usr/bin/supervisord -c /etc/supervisor/supervisord.conf

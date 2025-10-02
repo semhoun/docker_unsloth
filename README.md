@@ -27,6 +27,7 @@ Access Jupyter Lab at `http://localhost:8888` and start fine-tuning!
 - **Dual access modes** - Both Jupyter Lab and SSH access available
 - **Non-root user setup** - Runs with `unsloth` user for enhanced security
 - **GPU-optimized** - Built for NVIDIA GPUs
+- **llama.cpp** - Already compiled (just symlink to /opt/llama.cpp)
 
 ## 🔧 Configuration Options
 
@@ -97,7 +98,7 @@ ssh -i ~/.ssh/container_key -p 2222 unsloth@localhost
 
 ## 🗂️ Container Structure
 
-- `/workspace/work/` - Your mounted work directory (if mounted)
+- `/workspace/work/` - Your mounted work directory
 - `/workspace/unsloth-notebooks/` - Example Unsloth fine-tuning notebooks
 - `/workspace/notebooks/` - My personnal fine-tuning notebooks
 - `/home/unsloth/` - User home directory
