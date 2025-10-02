@@ -1,2 +1,2 @@
-unsloth ALL=(ALL) NOPASSWD: /bin/mkdir -p /var/run/sshd, /usr/sbin/sshd -D -p 22, /usr/sbin/chpasswd, /usr/bin/chmod
-unsloth ALL=(ALL) NOPASSWD: ALL
+unsloth ALL=(ALL) ALL
+unsloth ALL=(ALL) NOPASSWD: /bin/mkdir -p /var/run/sshd, /usr/sbin/sshd -D -p 22, /usr/sbin/chpasswd, /usr/bin/chmod, /usr/bin/ssh-keygen -A

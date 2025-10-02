@@ -102,6 +102,7 @@ ssh -i ~/.ssh/container_key -p 2222 unsloth@localhost
 - `/workspace/unsloth-notebooks/` - Example Unsloth fine-tuning notebooks
 - `/workspace/notebooks/` - My personnal fine-tuning notebooks
 - `/home/unsloth/` - User home directory
+- `/opt/llama.cpp/` - LLama.cpp compiled
 
 ## 🔒 Security Notes
 

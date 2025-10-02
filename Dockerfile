@@ -11,21 +11,26 @@ RUN apt-get update \
     python3-pip python-is-python3 python3 \
   && apt-get clean
 
-RUN mkdir -p /workspace \
-  && cd /opt \
+RUN cd /opt \
   && git clone  --depth 1 https://github.com/ggerganov/llama.cpp \
   && cmake llama.cpp -B llama.cpp/build -DBUILD_SHARED_LIBS=ON -DGGML_NATIVE=OFF -DGGML_CUDA=ON -DGGML_BACKEND_DL=ON -DGGML_CPU_ALL_VARIANTS=ON -DLLAMA_BUILD_TESTS=OFF \
   && cmake --build llama.cpp/build --config Release -j --clean-first --target llama-quantize llama-cli llama-gguf-split llama-mtmd-cli \
   && cp llama.cpp/build/bin/llama-* llama.cpp \
   && rm -rf build
 
-COPY root_fs /
-
 RUN mkdir -p /workspace/.cache/huggingface /workspace/work \
-  && git clone https://github.com/unslothai/notebooks.git /tmp/notebooks \
-  && mv /tmp/notebooks /workspace/unsloth-notebooks \
-  && rm -rf /tmp/notebooks \
-  && echo "=========================================" > /etc/motd \
+  && groupadd -K GID_MIN=100 -K GID_MAX=499 runtimeusers \
+  && groupadd --gid 1000 unsloth \
+  && useradd -m -u 1000 -g 1000 -s /bin/bash unsloth \
+  && usermod -aG sudo unsloth \
+  && gpasswd -a unsloth runtimeusers \
+  && chown -R unsloth:runtimeusers /workspace \
+  && mkdir -p /var/run/sshd /var/log/ssh /var/log/jupyter /var/log/supervisor \
+  && chown unsloth /var/log/jupyter /var/log/supervisor /var/log/ssh /var/run \
+  && chmod 400 /var/run/sshd \
+  && rm -f /etc/ssh/ssh_host_*
+  
+RUN  echo "=========================================" > /etc/motd \
   && echo "🦥 Welcome to Unsloth Container!" >> /etc/motd \
   && echo "=========================================" >> /etc/motd \
   && echo "" >> /etc/motd \
@@ -40,33 +45,21 @@ RUN mkdir -p /workspace/.cache/huggingface /workspace/work \
   && echo "  - Persistent disk: work" >> /etc/motd \
   && echo "" >> /etc/motd \
   && echo "💡 Tips:" >> /etc/motd \
-  && echo "  - Use tmux or screen for persistent sessions" >> /etc/motd \
+  && echo "  - Use tmux for persistent sessions" >> /etc/motd \
   && echo "  - Models and datasets cache automatically" >> /etc/motd \
   && echo "  - Save your work in shared folder/volume bind" >> /etc/motd \
   && echo "  - Check GPU: nvidia-smi" >> /etc/motd \
   && echo "" >> /etc/motd \
   && echo "Happy fine-tuning! 🎯" >> /etc/motd \
-  && echo "=========================================" >> /etc/motd \
-  && groupadd -K GID_MIN=100 -K GID_MAX=499 runtimeusers \
-  && groupadd --gid 1000 unsloth \
-  && useradd -m -u 1000 -g 1000 -s /bin/bash unsloth \
-  && usermod -aG sudo unsloth \
-  && gpasswd -a unsloth runtimeusers \
-  && chown -R unsloth:runtimeusers /workspace \
-  && mkdir -p /var/run/sshd /var/log/ssh /var/log/jupyter /var/log/supervisor \
-  && chown unsloth /var/log/jupyter /var/log/supervisor /var/log/ssh /var/run \
-  && chmod 400 /var/run/sshd \
-  && rm -f /etc/ssh/ssh_host_*
+  && echo "=========================================" >> /etc/motd
   
-RUN cp /workspace/llama.cpp/convert_hf_to_gguf.py /workspace/llama.cpp/unsloth_convert_hf_to_gguf.py \
-  && ln -s /opt/llama.cpp /workspace/llama.cpp \
-  && ln -s /opt/llama.cpp /workspace/work/llama.cpp \
-  && ln -s /opt/llama.cpp /workspace/unsloth-notebooks/llama.cpp \
-  && chown -R unsloth:runtimeusers /workspace /opt/llama.cpp
+RUN git clone https://github.com/unslothai/notebooks.git /tmp/notebooks \
+  && mv /tmp/notebooks/nb /workspace/unsloth-notebooks \
+  && rm -rf /tmp/notebooks
 
-USER unsloth:runtimeusers
 WORKDIR /workspace
 
+USER unsloth:runtimeusers
 ENV PATH="${PATH}:/home/unsloth/.local/bin"
 
 RUN pip install --no-cache-dir \
@@ -133,6 +126,18 @@ RUN pip install --no-cache-dir \
   && pip install numpy==2.2.6 \
   && pip cache purge \
   && jupyter lab clean
+  
+USER root
+
+COPY root_fs /
+
+RUN cp /opt/llama.cpp/convert_hf_to_gguf.py /opt/llama.cpp/unsloth_convert_hf_to_gguf.py \
+  && ln -s /opt/llama.cpp /workspace/llama.cpp \
+  && ln -s /opt/llama.cpp /workspace/work/llama.cpp \
+  && ln -s /opt/llama.cpp /workspace/unsloth-notebooks/llama.cpp \
+  && chown -R unsloth:runtimeusers /workspace /opt/llama.cpp
+
+USER unsloth:runtimeusers
 
 EXPOSE 22
 EXPOSE 8888

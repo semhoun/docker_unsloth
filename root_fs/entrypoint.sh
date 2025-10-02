@@ -13,7 +13,7 @@ echo 'source /tmp/unsloth_environment' >> /home/unsloth/.bashrc
 FINAL_PASSWORD="${USER_PASSWORD:-unsloth}"
 
 # Set the password for the unsloth user
-echo "unsloth:${FINAL_PASSWORD}" | sudo chpasswd
+echo "unsloth:${FINAL_PASSWORD}" | sudo /usr/sbin/chpasswd
 echo "User 'unsloth' password set."
 
 # Default values
@@ -54,12 +54,10 @@ done
 
 if [ "$HOST_KEYS_OK" = false ]; then
     echo "Generating SSH host keys..."
-    # Remove any existing (possibly corrupted) keys
-    sudo rm -f /etc/ssh/ssh_host_*
     # Generate fresh keys
     sudo ssh-keygen -A
     # Verify they were created
-    sudo ls -la /etc/ssh/ssh_host_* 2>/dev/null || echo "Warning: SSH host keys may not have been generated properly"
+    ls -la /etc/ssh/ssh_host_* 2>/dev/null || echo "Warning: SSH host keys may not have been generated properly"
 else
     echo "SSH host keys already exist and appear valid"
 fi
