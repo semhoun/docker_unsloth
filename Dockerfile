@@ -57,11 +57,6 @@ RUN git clone https://github.com/unslothai/notebooks.git /tmp/notebooks \
   && mv /tmp/notebooks/nb /workspace/unsloth-notebooks \
   && rm -rf /tmp/notebooks
 
-WORKDIR /workspace
-
-USER unsloth:runtimeusers
-ENV PATH="${PATH}:/home/unsloth/.local/bin"
-
 RUN pip install --no-cache-dir \
     langid \
     jiwer \
@@ -90,45 +85,31 @@ RUN pip install --no-cache-dir \
     jupyterlab \
     notebook \
     ipywidgets \
-    jupyter-resource-usage \
-    jupyterlab-nvdashboard \
     timm \
     transformers-cfg \
     evaluate \
     huggingface-hub[hf-transfer] \
+    hf_xet \
     "math-verify[antlr4_13_2]" \
     wandb \
-    tensorboard \
-    bitsandbytes \
-    accelerate \
-    "xformers==0.0.32.post2" \
-    peft \
-    triton \
-    cut_cross_entropy \
-    sentencepiece \
-    protobuf \
-    "datasets>=3.4.1,<4.0.0" \
-    "huggingface_hub>=0.34.0" \
-    hf_transfer \
-  && pip install --no-deps \
+    "trackio<1.0" \
+    tensorboard &&     python3 -m pip install --no-deps \
     descript-audio-codec \
     descript-audiotools \
     julius \
     snac \
   && pip install --no-cache-dir \
     synthetic-data-kit==0.0.3 \
-    vllm==0.9.2 \
-    unsloth-zoo \
-    unsloth \
-  && pip install --force-reinstall transformers==4.55.4 \
-  && pip install --no-deps trl==0.19.1 \
+    vllm==0.10.2 \
+    unsloth-zoo==2025.9.14 \
+    unsloth==2025.9.11 \
+  && pip install --force-reinstall transformers==4.56.2 \
+  && pip install --no-deps trl==0.23.0 \
   && pip install kernels git+https://github.com/triton-lang/triton.git@05b2c186c1b6c9a08375389d5efe9cb4c401c075#subdirectory=python/triton_kernels \
   && pip install numpy==2.2.6 \
   && pip cache purge \
   && jupyter lab clean
   
-USER root
-
 COPY root_fs /
 
 RUN cp /opt/llama.cpp/convert_hf_to_gguf.py /opt/llama.cpp/unsloth_convert_hf_to_gguf.py \
@@ -136,6 +117,11 @@ RUN cp /opt/llama.cpp/convert_hf_to_gguf.py /opt/llama.cpp/unsloth_convert_hf_to
   && ln -s /opt/llama.cpp /workspace/work/llama.cpp \
   && ln -s /opt/llama.cpp /workspace/unsloth-notebooks/llama.cpp \
   && chown -R unsloth:runtimeusers /workspace /opt/llama.cpp
+
+WORKDIR /workspace
+
+ENV HF_HOME=/workspace/.cache/huggingface \
+  HF_HUB_ENABLE_HF_TRANSFER=1 
 
 USER unsloth:runtimeusers
 
